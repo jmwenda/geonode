@@ -299,6 +299,7 @@ INSTALLED_APPS = (
     'tastypie',
     'polymorphic',
     'guardian',
+    'geonode.ogpsearch',
 
 ) + GEONODE_APPS
 
