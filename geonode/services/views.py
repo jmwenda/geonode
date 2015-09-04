@@ -41,6 +41,7 @@ from owslib.wms import WebMapService
 from owslib.wfs import WebFeatureService
 from owslib.tms import TileMapService
 from owslib.csw import CatalogueServiceWeb
+from owslib.wmts import WebMapTileService
 
 from arcrest import Folder as ArcFolder, MapService as ArcMapService
 
@@ -108,7 +109,6 @@ def register_service(request):
             server = None
             if type == "AUTO":
                 type, server = _verify_service_type(url)
-
             if type is None:
                 return HttpResponse('Could not determine server type', status=400)
 
@@ -121,6 +121,8 @@ def register_service(request):
 
             if type in ["WMS", "OWS"]:
                 return _process_wms_service(url, name, type, user, password, wms=server, owner=request.user)
+            elif type == "WMTS":
+                return _process_wmts_service(url, name, type, user, password, wmts=server, owner=request.user)
             elif type == "REST":
                 return _register_arcgis_url(url, name, user, password, owner=request.user)
             elif type == "CSW":
@@ -204,7 +206,6 @@ def _verify_service_type(base_url, service_type=None):
     """
     Try to determine service type by process of elimination
     """
-
     if service_type in ['WMS', 'OWS', None]:
         try:
             service = WebMapService(base_url)
@@ -228,6 +229,14 @@ def _verify_service_type(base_url, service_type=None):
             pass
         else:
             return ['TMS', service]
+    
+    if service_type in ['WMTS', None]:
+        try:
+            service = WebMapTileService(base_url)
+        except:
+            pass 
+        else:
+            return ['WMTS', service]
 
     if service_type in ['REST', None]:
         try:
@@ -300,6 +309,45 @@ def _process_wms_service(url, name, type, username, password, wms=None, owner=No
         return _register_indexed_service(type, url, name, username, password, wms=wms, owner=owner, parent=parent)
     else:
         return _register_cascaded_service(url, type, name, username, password, wms=wms, owner=owner, parent=parent)
+
+def _process_wmts_service(url, name, type, username, password, wmts=None, owner=None, parent=None):
+    """
+    Create a new WMTS service
+    """
+    if wmts is None:
+        wmts = WebMapTileService(url)
+    try:
+        base_url = _clean_url(
+            wmts.getOperationByName('GetTile').methods['Get']['url'])
+
+        if base_url and base_url != url:
+            url = base_url
+            wms = WebMapTileService(base_url)
+    except:
+        logger.info(
+            "Could not retrieve GetMap url, using originally supplied URL %s" % url)
+        pass
+    try:
+        service = Service.objects.get(base_url=url)
+        return_dict = [{'status': 'ok',
+                        'msg': _("This is an existing service"),
+                        'service_id': service.pk,
+                        'service_name': service.name,
+                        'service_title': service.title
+                        }]
+        return HttpResponse(json.dumps(return_dict),
+                            mimetype='application/json',
+                            status=200)
+    except:
+        pass
+    title = wmts.identification.title
+    if not name:
+        if title:
+            name = _get_valid_name(title)
+        else:
+            name = _get_valid_name(urlsplit(url).netloc)
+    
+    return _register_indexed_service(type, url, name, username, password, wms=wmts, owner=owner, parent=parent)
 
 
 def _register_cascaded_service(url, type, name, username, password, wms=None, owner=None, parent=None):
@@ -514,13 +562,14 @@ def _register_indexed_service(type, url, name, username, password, verbosity=Fal
     """
     Register a service - WMS or OWS currently supported
     """
-    if type in ['WMS', "OWS", "HGL"]:
+    if type in ['WMS', "OWS", "HGL","WMTS"]:
         # TODO: Handle for errors from owslib
         if wms is None:
             wms = WebMapService(url)
+        if type is "WMTS":
+            wms = WebMapTileService(url)
         # TODO: Make sure we are parsing all service level metadata
         # TODO: Handle for setting ServiceProfileRole
-
         try:
             service = Service.objects.get(base_url=url)
             return_dict = {}
@@ -551,7 +600,6 @@ def _register_indexed_service(type, url, name, username, password, verbosity=Fal
         available_resources = []
         for layer in list(wms.contents):
             available_resources.append([wms[layer].name, wms[layer].title])
-
         if settings.USE_QUEUE:
             # Create a layer import job
             WebServiceHarvestLayersJob.objects.get_or_create(service=service)
@@ -640,6 +688,71 @@ def _register_indexed_layers(service, wms=None, verbosity=False):
                     uuid=layer_uuid,
                     owner=None,
                     srid=srid,
+                    bbox_x0=bbox[0],
+                    bbox_x1=bbox[2],
+                    bbox_y0=bbox[1],
+                    bbox_y1=bbox[3]
+                )
+            )
+            if created:
+                saved_layer.save()
+                saved_layer.set_default_permissions()
+                saved_layer.keywords.add(*keywords)
+                set_attributes(saved_layer)
+
+                service_layer, created = ServiceLayer.objects.get_or_create(
+                    typename=wms_layer.name,
+                    service=service
+                )
+                service_layer.layer = saved_layer
+                service_layer.title = wms_layer.title
+                service_layer.description = wms_layer.abstract
+                service_layer.styles = wms_layer.styles
+                service_layer.save()
+            count += 1
+        message = "%d Layers Registered" % count
+        return_dict = {'status': 'ok', 'msg': message}
+        return HttpResponse(json.dumps(return_dict),
+                            mimetype='application/json',
+                            status=200)
+
+    elif service.type == 'WMTS':
+        wms = wms or WebMapTileService(service.base_url)
+        count = 0
+        for layer in list(wms.contents):
+            wms_layer = wms[layer]
+            if wms_layer is None or wms_layer.name is None:
+                continue
+            logger.info("Registering layer %s" % wms_layer.name)
+            if verbosity:
+                print "Importing layer %s" % layer
+            layer_uuid = str(uuid.uuid1())
+            try:
+                keywords = map(lambda x: x[:100], wms_layer.keywords)
+            except:
+                keywords = []
+            if not wms_layer.abstract:
+                abstract = ""
+            else:
+                abstract = wms_layer.abstract
+
+            bbox = list(
+                wms_layer.boundingBoxWGS84 or (-179.0, -89.0, 179.0, 89.0))
+
+            # Need to check if layer already exists??
+            saved_layer, created = Layer.objects.get_or_create(
+                typename=wms_layer.name,
+                service=service,
+                defaults=dict(
+                    name=wms_layer.name,
+                    store=service.name,  # ??
+                    storeType="remoteStore",
+                    workspace="remoteWorkspace",
+                    title=wms_layer.title or wms_layer.name,
+                    abstract=abstract or _("Not provided"),
+                    uuid=layer_uuid,
+                    owner=None,
+                    srid=wms_layer.tilematrixsets,
                     bbox_x0=bbox[0],
                     bbox_x1=bbox[2],
                     bbox_y0=bbox[1],

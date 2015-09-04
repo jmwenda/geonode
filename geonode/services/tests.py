@@ -62,6 +62,32 @@ class ServicesTests(TestCase):
         except Exception, e:
             traceback.print_exc(file=sys.stdout)
             self.fail("Service not created: %s" % str(e))
+    
+    def test_register_indexed_wmts(self):
+        """Test registering an indexed WMTS
+        """
+        self.client.login(username='admin', password='admin')
+
+        response = self.client.post(
+            reverse('register_service'),
+            {
+             'type': 'WMTS',
+             'url': 'http://maps.opengeo.org/geowebcache/service/wmts',
+            })
+        self.assertEqual(response.status_code, 200)
+        service_dict = json.loads(response.content)[0]
+
+        try:
+            service = Service.objects.get(id=service_dict['service_id'])
+            # Harvested some layers
+            self.assertTrue(service.layer_set.count() > 0)
+            self.assertEqual(service.method, "I")
+            self.assertEqual(service.type, "WMTS")
+            self.assertEqual(service.ptype, 'gxp_olsource')
+        except Exception, e:
+            traceback.print_exc(file=sys.stdout)
+            self.fail("Service not created: %s" % str(e))
+
 
     def test_register_arcrest(self):
         """Test registering an arcrest service

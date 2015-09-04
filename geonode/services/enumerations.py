@@ -24,6 +24,7 @@ SERVICE_TYPES = (
     ('AUTO', _('Auto-detect')),
     ('OWS', _('Paired WMS/WFS/WCS')),
     ('WMS', _('Web Map Service')),
+    ('WMTS', _('Web Map Tiling Service')),
     ('CSW', _('Catalogue Service')),
     ('REST', _('ArcGIS REST Service')),
     ('OGP', _('OpenGeoPortal')),
@@ -43,6 +44,7 @@ SERVICE_METHODS = (
 GXP_PTYPES = {
     'OWS': 'gxp_wmscsource',
     'WMS': 'gxp_wmscsource',
+    'WMTS': 'gxp_olsource',
     'WFS': 'gxp_wmscsource',
     'WCS': 'gxp_wmscsource',
     'REST': 'gxp_arcrestsource',
