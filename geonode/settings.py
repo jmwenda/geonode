@@ -783,6 +783,7 @@ LEAFLET_CONFIG = {
          <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; \
          <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, \
          <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>'),
+        ('OpenStreetMap','http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png','OpenStreetMap Contributors'),
     ],
     'PLUGINS': {
         'esri-leaflet': {
@@ -794,7 +795,14 @@ LEAFLET_CONFIG = {
             'js': 'lib/js/Leaflet.fullscreen.min.js',
             'auto-include': True,
         },
-    }
+        'WMTS-plugin': {
+            'js': 'geonode/js/leaflet/leaflet-tilelayer-wmts-src.js',
+            'auto-include': True,
+        },
+    },   
+    'SRID': 3857,
+    'DEFAULT_CENTER': (0.00, 0.00),
+    'DEFAULT_ZOOM': 10,
 }
 
 # option to enable/disable resource unpublishing for administrators

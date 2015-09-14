@@ -268,7 +268,7 @@ def layer_detail(request, layername, template='layers/layer_detail.html'):
 
     metadata = layer.link_set.metadata().filter(
         name__in=settings.DOWNLOAD_FORMATS_METADATA)
-
+ 
     context_dict = {
         "resource": layer,
         'perms_list': get_perms(request.user, layer.get_self_resource()),

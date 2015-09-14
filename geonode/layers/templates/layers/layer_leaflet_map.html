@@ -15,7 +15,7 @@
         {% if resource.bbox_string %}
         zoom_to_box(map, [{{ resource.bbox_string }}]);
         {% endif %}
-
+  
         {% if resource.get_tiles_url %}
         tile_layer = L.tileLayer("{{ resource.get_tiles_url|safe }}",
         {
@@ -35,7 +35,12 @@
                 transparent: true,
                 'opacity':0.8
             });
-
+        {%  elif resource.ptype == "gxp_olsource" %}
+            tile_layer = new L.TileLayer.WMTS('{{ resource.ows_url|safe }}',{
+                  layer: '{{resource.name}}',
+                  tilematrixSet: 'g',
+                  format: "image/png",
+            });
         {% endif %}
         if (tile_layer != null) {
             map.layerscontrol.addOverlay(tile_layer,"{{ resource.title }}");
