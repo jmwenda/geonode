@@ -300,7 +300,7 @@ def _process_wms_service(url, name, type, username, password, wms=None, owner=No
         supported_crs = ','.join(wms.contents.itervalues().next().crsOptions)
     except:
         supported_crs = None
-    if supported_crs and re.search('EPSG:900913|EPSG:3857|EPSG:102100', supported_crs):
+    if supported_crs and re.search('EPSG:900913|EPSG:3857|EPSG:102100|EPSG:102113|EPSG:3785', supported_crs):
         return _register_indexed_service(type, url, name, username, password, wms=wms, owner=owner, parent=parent)
     else:
         return _register_cascaded_service(url, type, name, username, password, wms=wms, owner=owner, parent=parent)
@@ -617,7 +617,7 @@ def _register_indexed_layers(service, wms=None, verbosity=False):
                 srid = 'EPSG:900913'
             elif len(wms_layer.crsOptions) > 0:
                 matches = re.findall(
-                    'EPSG\:(3857|102100|102113)', ' '.join(wms_layer.crsOptions))
+                    'EPSG\:(3857|102100|102113|3785)', ' '.join(wms_layer.crsOptions))
                 if matches:
                     srid = 'EPSG:%s' % matches[0]
             if srid is None:
