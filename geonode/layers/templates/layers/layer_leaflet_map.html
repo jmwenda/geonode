@@ -35,7 +35,7 @@
                 transparent: true,
                 'opacity':0.8
             });
-        {%  elif resource.ptype == "gxp_olsource" %}
+        {%  elif resource.ptype == "gxp_tmssource" %}
             tile_layer = new L.TileLayer.WMTS('{{ resource.ows_url|safe }}',{
                   layer: '{{resource.name}}',
                   tilematrixSet: 'g',
