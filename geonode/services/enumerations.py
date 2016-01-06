@@ -44,7 +44,7 @@ SERVICE_METHODS = (
 GXP_PTYPES = {
     'OWS': 'gxp_wmscsource',
     'WMS': 'gxp_wmscsource',
-    'WMTS': 'gxp_tmssource',
+    'WMTS': 'gxp_wmtssource',
     'WFS': 'gxp_wmscsource',
     'WCS': 'gxp_wmscsource',
     'REST': 'gxp_arcrestsource',
