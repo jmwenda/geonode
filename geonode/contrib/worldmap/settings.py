@@ -1,6 +1,6 @@
 
 DEFAULT_LAYER_SOURCE = {
-    "ptype": "gxp_gnsource",
+    "ptype": "gxp_wmssource",
     "url": "http://localhost:8080/geoserver/wms",
     "restUrl": "/gs/rest"
 }
