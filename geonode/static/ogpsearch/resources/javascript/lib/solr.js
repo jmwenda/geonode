@@ -132,7 +132,7 @@ OpenGeoportal.Solr = function() {
 			sort : this.getSortClause()};
 		if (this.heatmap)
 		{
-		    var heatmapParams = {facet : "true", "facet.heatmap" : "bbox_rpt", "facet.heatmap.format" : "ints2D"};
+		    var heatmapParams = {facet : "true", "facet.heatmap" : "the_geom", "facet.heatmap.format" : "ints2D"};
 		    this.baseParams = this.combineParams(this.baseParams, heatmapParams);
 		}
 		// ,
@@ -177,7 +177,7 @@ OpenGeoportal.Solr = function() {
 	this.SortDescending = "desc";
 
 	this.SortOrder = this.SortDescending;
-	this.SortColumn = "score";
+	this.SortColumn = "id";
 
 	this.setSort = function(column, order) {
 		if (order !== "asc" && order !== "desc") {
@@ -217,10 +217,8 @@ OpenGeoportal.Solr = function() {
 	this.MetadataRequest = "FgdcText";
 	this.CountRequest = "CountOnly";
 
-	this.SearchRequestColumns = [ "Name", "Institution", "Access", "DataType",
-			"LayerDisplayName", "Publisher", "GeoReferenced", "Originator",
-			"Location", "MinX", "MaxX", "MinY", "MaxY", "ContentDate",
-			"LayerId", "score", "WorkspaceName", "CollectionId", "ServiceType","Availability" ];
+	this.SearchRequestColumns = [ "FeatureId", "FeatureText", "id",
+			"the_geom", "Area","MinX", "MaxX", "MinY", "MaxY", "LayerId"];
 
 	// this function returns a Solr fl clause specifying the columns to return
 	// for the passed request
@@ -439,14 +437,15 @@ OpenGeoportal.Solr = function() {
 	 */
 	this.createAccessFilter = function(arrDisplayRestricted) {
 
-		var accessFilter = this.createFilter("Institution",
+		/*var accessFilter = this.createFilter("LayerName",
 				arrDisplayRestricted);
 
 		if (accessFilter.length > 0) {
 			accessFilter += " OR Access:Public";
 		}
 		//accessFilter = "Institution:Tufts";  //spmcd hack, where does institution come from?
-		console.log("in solr.createAccessFilter, accessFilter = " + accessFilter);
+		console.log("in solr.createAccessFilter, accessFilter = " + accessFilter);*/
+		accessFilter = "";
 		return accessFilter;
 	};
 
@@ -503,7 +502,7 @@ OpenGeoportal.Solr = function() {
 
     this.createNonGlobalAreaFilter = function createNonGlobalAreaFilter()
     {
-        var filter = this.createFilter("Area", "[0 TO 400]");
+        var filter = this.createFilter("Area", "[-1 TO 400]");
         return filter;
 
     };

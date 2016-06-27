@@ -23,7 +23,7 @@ OpenGeoportal.Models.QueryTerms = Backbone.Model.extend({
 		dateTo: null,
 		isoTopic: "",
 		facets: "",
-		sortBy: "score",
+		sortBy: "id",
 		sortDir: "asc",
 		mapExtent: {minX: -180, maxX: 180, minY: -90, maxY: 90},
 		mapCenter: {centerX: 0, centerY: 0},
@@ -38,8 +38,8 @@ OpenGeoportal.Models.QueryTerms = Backbone.Model.extend({
 		whereExample:"(Example: Boston, MA)",
 		searchType: "basic",
 		history: []
-	}, 
-	
+	},
+
 	initialize: function(){
 		var restricted = OpenGeoportal.Config.General.get("loginConfig").repositoryId;
 
@@ -49,7 +49,7 @@ OpenGeoportal.Models.QueryTerms = Backbone.Model.extend({
 			dataTypeList: OpenGeoportal.Config.DataTypes,
 			repositoryList: OpenGeoportal.Config.Repositories});
 	},
-	
+
 	/*
 	 * adds spatial search params to solr object if pertinent
 	 */
@@ -102,7 +102,7 @@ OpenGeoportal.Models.QueryTerms = Backbone.Model.extend({
 	 * this function returns a solr URL with the many standard options
 	 * set it provides a base solr object for both basic and advanced
 	 * searching
-	 * 
+	 *
 	 * @return Solr URL
 	 */
 	getSearchRequest : function() {
@@ -139,7 +139,7 @@ OpenGeoportal.Models.QueryTerms = Backbone.Model.extend({
 	    } else if (searchType === 'advanced') {
 		solr = this.getAdvancedSearchQuery();
 	    } else {
-		// fall through                                                                                                    
+		// fall through
 		solr = this.getBasicSearchQuery();
 	    }
 
@@ -175,7 +175,7 @@ OpenGeoportal.Models.QueryTerms = Backbone.Model.extend({
 		/*
 		 * var institutionConfig =
 		 * OpenGeoportal.InstitutionInfo.getInstitutionInfo();
-		 * 
+		 *
 		 * for (var institution in institutionConfig){
 		 * solr.addInstitution(institution); }
 		 */
@@ -231,7 +231,7 @@ OpenGeoportal.Models.QueryTerms = Backbone.Model.extend({
 
 		return solr;
 	},
-	
+
 
 	/*******************************************************************
 	 * Callbacks
@@ -266,7 +266,7 @@ OpenGeoportal.Models.QueryTerms = Backbone.Model.extend({
 	 * search without a spatial constraint if this search returns hits,
 	 * we let the user know there is data outside the map note that this
 	 * function changes the value returned by "getLastSolrSearch()"
-	 * 
+	 *
 	 * @return
 	 */
 	addSpatialToEmptySearchMessage : function() {

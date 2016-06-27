@@ -16,11 +16,11 @@ OpenGeoportal.Views.SearchResultsTable = OpenGeoportal.Views.LayerTable
 				"render" : "attachEvents",
 				"topmodel" : "renderPrevPage"
 			},
-			
+
 			initSubClass: function(){
-				
+
 				this.cart = OpenGeoportal.ogp.appState.get("cart");
-				
+
 				this.tableOrganize = new OpenGeoportal.TableSortSettings();
 
 				this.sortView = new OpenGeoportal.Views.Sort({
@@ -30,8 +30,8 @@ OpenGeoportal.Views.SearchResultsTable = OpenGeoportal.Views.LayerTable
 				});
 				var that = this;
 				this.sortView.listenTo(this.sortView.model, "change", function(){ that.collection.newSearch();});
-				
-								
+
+
 				this.columnMenu = new OpenGeoportal.Views.CollectionMultiSelectWithCheckbox(
 							{
 								collection : this.tableConfig,
@@ -51,7 +51,7 @@ OpenGeoportal.Views.SearchResultsTable = OpenGeoportal.Views.LayerTable
 								controlClass : "columnCheck"
 							}
 				);
-				
+
 				this.listenTo(this.collection, "add", this.appendRender);
 
 				this.listenTo(this.collection, "reset", this.closeAllSubview);
@@ -60,7 +60,7 @@ OpenGeoportal.Views.SearchResultsTable = OpenGeoportal.Views.LayerTable
 				//should call setFrameHeight whenever the search panel height changes or on render or render of previewPanel, or row render
 				jQuery(document).on("search.resize previewRow.expand",  function(){that.setFrameHeight.apply(that, arguments);});
 
-			
+
 				this.fireSearchHandler();
 
 			},
@@ -69,20 +69,20 @@ OpenGeoportal.Views.SearchResultsTable = OpenGeoportal.Views.LayerTable
 				var that = this;
 				var previewed$ = this.$(".previewedLayers");
 				this.previewedLayersTable = new OpenGeoportal.Views.PreviewedLayersTable({el: previewed$[0], collection: this.previewed, tableConfig: this.tableConfig});
-				this.tableConfig.listenTo(this.tableConfig, "change:visible", function(model){that.renderHeaders.apply(that, arguments); that.updateSubviews.call(that); 
+				this.tableConfig.listenTo(this.tableConfig, "change:visible", function(model){that.renderHeaders.apply(that, arguments); that.updateSubviews.call(that);
 					that.previewedLayersTable.render();that.adjustColumnSizes(); that.resizeColumns();});
 
 			},
-			
+
 			scrollOffset: 200,
-			
+
 			attachEvents: function(){
 				this.collection.enableFetch();
 				var that = this;
 				this.setFrameHeight();
 				var scrollTarget$ = this.$el.children(".tableWrapper").children(".rowContainer");
 				scrollTarget$.off("scroll").on("scroll", function(){that.watchScroll.apply(that, arguments);});
-				   
+
 			},
 			prevScrollY: 0,
 			watchScroll: function(e) {
@@ -95,7 +95,7 @@ OpenGeoportal.Views.SearchResultsTable = OpenGeoportal.Views.LayerTable
 					docHeight = $(document).height();
 				}
 
-				
+
 				if (scrollY >= docHeight - this.scrollOffset && this.prevScrollY <= scrollY) {
 					this.collection.nextPage();
 
@@ -110,7 +110,7 @@ OpenGeoportal.Views.SearchResultsTable = OpenGeoportal.Views.LayerTable
 				}
 				this.prevScrollY = scrollY;
 			},
-			
+
 			setFrameHeight: function(){
 				var $scrollTarget = this.$el.children(".tableWrapper").children(".rowContainer");
 				if ($scrollTarget.length === 0){
@@ -123,7 +123,7 @@ OpenGeoportal.Views.SearchResultsTable = OpenGeoportal.Views.LayerTable
 				var ht = Math.ceil(jQuery(document).height() - $scrollTarget.offset().top - previewedHeight - jQuery("#footer").height());
 				$scrollTarget.height(ht);
 			},
-			
+
 			fireSearchHandler: function(){
 				var that = this;
 				jQuery(document).on("fireSearch", function(){
@@ -132,16 +132,16 @@ OpenGeoportal.Views.SearchResultsTable = OpenGeoportal.Views.LayerTable
 					jQuery(document).one("newResults", function(){that.$el.fadeTo("fast", 1)});
 				});
 			},
-			
-			emptyTableMessage: "No matching layers.",
-			
 
-			
+			emptyTableMessage: "No matching layers.",
+
+
+
 			renderPrevPage: function(event, model){
 				var that = this;
 				var pageSize = this.collection.pageParams.rows;
 				var topResultNum = model.get("resultNum");
-				
+
 				var prevPage = this.collection.filter(function(currModel){
 					var num = currModel.get("resultNum");
 					return num < topResultNum && num >= Math.max(topResultNum - pageSize, 0);
@@ -165,7 +165,7 @@ OpenGeoportal.Views.SearchResultsTable = OpenGeoportal.Views.LayerTable
 					that.collection.remove(last);
 				});
 			},
-			
+
 			/*renderNextPage: function(event, model){
 				var that = this;
 				var pageSize = this.collection.pageParams.rows;
@@ -175,7 +175,7 @@ OpenGeoportal.Views.SearchResultsTable = OpenGeoportal.Views.LayerTable
 					var num = currModel.get("resultNum");
 					return num > bottomResultNum && num <= bottomResultNum + pageSize;
 				});
-				
+
 
 				var spacer$ = this.$(".bottomSpacer");
 				spacer$.css("min-height", 0);
@@ -185,16 +185,16 @@ OpenGeoportal.Views.SearchResultsTable = OpenGeoportal.Views.LayerTable
 					var ht = jQuery(newRow.el).insertAfter(currentBottom$).height();
 					spacer$.css("height", "-=" + ht);
 				});
-				
+
 				var lastNum = _.last(nextPage).get("resultNum");
 				if (lastNum < this.collection.totalResults && lastNum < bottomResultNum + pageSize){
 					this.collection.nextPage();
 				}
 			},*/
 
-			
+
 			appendRender: function(model){
-				
+
 				var newRow = this.createNewRow(model);
 				var rowContainer$ = this.$el.children(".tableWrapper").children(".rowContainer");
 				var rows$ = rowContainer$.children(".tableRow");
@@ -214,7 +214,7 @@ OpenGeoportal.Views.SearchResultsTable = OpenGeoportal.Views.LayerTable
 			},
 
 			createNewRow: function(model, toTop){
-				
+
 				var row = new OpenGeoportal.Views.SearchResultsRow(
 						{
 							model : model,
@@ -231,7 +231,7 @@ OpenGeoportal.Views.SearchResultsTable = OpenGeoportal.Views.LayerTable
 			getTable: function(){
 				return jQuery(this.template.tableView({tableHeader: this.template.tableHeader(this.getHeaderInfo()), tableFooter: ""}));
 			},
-			
+
 			render : function() {
 				//console.log("full render");
 				var that = this;
@@ -239,9 +239,9 @@ OpenGeoportal.Views.SearchResultsTable = OpenGeoportal.Views.LayerTable
 				if (this.$(".previewedLayers").length > 0){
 					previewedTable = this.$(".previewedLayers").detach();
 				}
-				
+
 				var template$ = this.getTable();
-								
+
 				var rowcount = 0;
 				var rows = [];
 				this.collection.each(function(model) {
@@ -249,35 +249,35 @@ OpenGeoportal.Views.SearchResultsTable = OpenGeoportal.Views.LayerTable
 					rows.push(row.el);
 					rowcount++;
 				});
-				
+
 				if (rowcount === 0){
 					template$.append(this.template.emptyTable({message: this.emptyTableMessage}));
-					
+
 				} else {
 					template$.children(".rowContainer").append(rows);
 				}
-				
+
 
 				if (previewedTable === null){
 					previewedTable = jQuery('<div class="previewedLayers"></div>');
 				}
-				
+
 				template$.children(".tableHeaders").after(previewedTable);
 
 				this.$el.html(template$);
-				
+
 				this.updateColWidths();
 				this.resizeColumns();
-				
+
 				this.$el.trigger("render");
 				return this;
 
 			},
-			
+
 			updateResultsNumber: function() {
 				jQuery('.resultsNumber').text(this.collection.totalResults);
 			},
-			
+
 			addColumns: function(tableConfigCollection) {
 				var that = this;
 				tableConfigCollection
@@ -311,7 +311,7 @@ OpenGeoportal.Views.SearchResultsTable = OpenGeoportal.Views.LayerTable
 									width : 19,
 									modelRender : function(model) {
 										var layerId = model.get("LayerId");
-								
+
 										var stateVal = false;
 										var selModel =	that.cart.findWhere({
 											LayerId : layerId
@@ -319,20 +319,20 @@ OpenGeoportal.Views.SearchResultsTable = OpenGeoportal.Views.LayerTable
 										if (typeof selModel !== 'undefined') {
 											stateVal = true;
 										}
-													
-										
+
+
 										return that.tableControls.renderSaveControl(stateVal);
 									}
 									},
 									{
 										order : 2,
-										columnName : "DataType",
+										columnName : "LayerId",
 										resizable : false,
 										organize : "group",
 										visible : true,
 										hidable : true,
-										displayName : "Data Type",
-										header : "Type",
+										displayName : "LayerId",
+										header : "LayerId",
 										columnClass : "colType",
 										width : 90,
 										modelRender : function(model) {
@@ -427,7 +427,7 @@ OpenGeoportal.Views.SearchResultsTable = OpenGeoportal.Views.LayerTable
 										visible : false,
 										hidable : false,
 										header : "Access"
-									}, 
+									},
 								{
 									order : 10,
 									columnName : "Metadata",
@@ -467,21 +467,21 @@ OpenGeoportal.Views.SearchResultsTable = OpenGeoportal.Views.LayerTable
 												stateVal = true;
 											}
 										}
-										
+
 										var canPreview = function(location){
 											//where is a good place to centralize this?
 											return OpenGeoportal.Utility.hasLocationValueIgnoreCase(location, ["wms", "arcgisrest", "imagecollection"]);
 										};
-										
+
 										var hasAccess = true;
 										var canLogin = true;
-										
+
 										var previewable = canPreview(location);
 										if (previewable){
 											var loginModel = OpenGeoportal.ogp.appState.get("login").model;
 											hasAccess = loginModel.hasAccessLogic(access, institution);
 											canLogin = loginModel.canLoginLogic(institution);
-										} 
+										}
 
 										return that.tableControls.renderPreviewControl(previewable, hasAccess, canLogin, stateVal);
 									}

@@ -61,7 +61,7 @@ OpenGeoportal.Models.Heatmap = Backbone.Model.extend(
 			    if (facetCounts != null)
 				{
 				    var facetHeatmaps = facetCounts.facet_heatmaps;
-				    bbox_rpt = facetHeatmaps.bbox_rpt;
+				    bbox_rpt = facetHeatmaps.the_geom;
 				    that.drawHeatmapOpenLayers(that, bbox_rpt);
 				}
 			}});
